@@ -1,0 +1,43 @@
+import type { Organizer } from '@/types/organizer'
+
+export const mockOrganizers: Organizer[] = [
+  {
+    id: 'org-1',
+    name: '예시파티',
+    slug: 'yesi-party',
+    description: '강남권 로테이션 소개팅 전문 업체. 매주 토요일 정기 행사 운영.',
+    website_url: 'https://example.com',
+    instagram_url: 'https://instagram.com/example',
+    kakao_url: null,
+    main_region: '강남/서초',
+    official_status: 'unclaimed',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: 'org-2',
+    name: '솔로클럽',
+    slug: 'solo-club',
+    description: '홍대·합정 솔로파티 전문. 20대 위주 행사 운영.',
+    website_url: 'https://example2.com',
+    instagram_url: 'https://instagram.com/example2',
+    kakao_url: null,
+    main_region: '홍대/합정',
+    official_status: 'unclaimed',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: 'org-3',
+    name: '와인앤미트',
+    slug: 'wine-n-meet',
+    description: '성수·건대 와인파티 소개팅 전문.',
+    website_url: null,
+    instagram_url: 'https://instagram.com/example3',
+    kakao_url: null,
+    main_region: '성수/건대',
+    official_status: 'unclaimed',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  },
+]

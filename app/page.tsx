@@ -1,65 +1,99 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { EventList } from '@/components/events/EventList'
+import { mockEvents } from '@/data/mock-events'
+import { isThisWeekend } from '@/lib/utils'
 
-export default function Home() {
+const quickFilters = [
+  { label: '오늘', href: '/events?date=today' },
+  { label: '내일', href: '/events?date=tomorrow' },
+  { label: '이번 주말', href: '/events?date=this_weekend' },
+  { label: '강남/서초', href: '/events?region=gangnam' },
+  { label: '홍대/합정', href: '/events?region=hongdae' },
+  { label: '성수/건대', href: '/events?region=seongsu' },
+  { label: '로테이션 소개팅', href: '/events?type=rotation_dating' },
+  { label: '솔로파티', href: '/events?type=solo_party' },
+]
+
+const publishedEvents = mockEvents.filter((e) => e.status === 'published' || e.status === 'needs_check')
+const weekendEvents = publishedEvents.filter((e) => isThisWeekend(e.event_date))
+const recentEvents = publishedEvents.slice(0, 4)
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="max-w-2xl mx-auto px-4 py-6 space-y-10">
+
+      {/* 히어로 */}
+      <section className="text-center py-6">
+        <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
+          이번 주 로테이션 소개팅과<br />솔로파티를 한눈에.
+        </h1>
+        <p className="text-gray-500 text-sm mb-6">
+          지역, 날짜, 가격, 연령대를 비교하고 원문 신청 링크로 바로 이동하세요.
+        </p>
+        <Link
+          href="/events"
+          className="inline-flex items-center bg-rose-500 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-rose-600 transition-colors"
+        >
+          전체 행사 보기
+        </Link>
+      </section>
+
+      {/* 빠른 필터 */}
+      <section>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">빠른 필터</h2>
+        <div className="flex flex-wrap gap-2">
+          {quickFilters.map((f) => (
+            <Link
+              key={f.label}
+              href={f.href}
+              className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:border-rose-400 hover:text-rose-600 transition-colors"
+            >
+              {f.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 이번 주말 행사 */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-gray-900">이번 주말 행사</h2>
+          <Link href="/events?date=this_weekend" className="text-sm text-rose-500 hover:underline">
+            더 보기
+          </Link>
+        </div>
+        <EventList
+          events={weekendEvents}
+          emptyTitle="이번 주말 등록된 행사가 없습니다"
+          emptyDescription="다른 날짜 필터를 선택해 보세요."
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      </section>
+
+      {/* 최근 등록 행사 */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-gray-900">최근 등록된 행사</h2>
+          <Link href="/events" className="text-sm text-rose-500 hover:underline">
+            전체 보기
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <EventList events={recentEvents} />
+      </section>
+
+      {/* 행사 제보 CTA */}
+      <section className="bg-rose-50 rounded-2xl p-6 text-center">
+        <h2 className="font-bold text-gray-900 mb-1">행사 정보를 알고 계신가요?</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          운영자 검수 후 솔로맵에 등록됩니다. 별도 회원가입이 필요하지 않습니다.
+        </p>
+        <Link
+          href="/submit"
+          className="inline-flex items-center bg-rose-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-rose-600 transition-colors"
+        >
+          행사 제보하기
+        </Link>
+      </section>
+
     </div>
-  );
+  )
 }
