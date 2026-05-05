@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error || !data.session) {
-    return NextResponse.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, { status: 401 })
+    return NextResponse.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.', debug: error?.message, code: error?.status }, { status: 401 })
   }
 
   // admin_users 테이블에서 역할 확인
