@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { mockOrganizers } from '@/data/mock-organizers'
-import { mockEvents } from '@/data/mock-events'
+import { getOrganizerById, getEventsByOrganizer } from '@/lib/queries'
 import { EventList } from '@/components/events/EventList'
+
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -10,10 +11,12 @@ interface PageProps {
 
 export default async function OrganizerDetailPage({ params }: PageProps) {
   const { id } = await params
-  const organizer = mockOrganizers.find((o) => o.id === id)
+  const [organizer, allEvents] = await Promise.all([
+    getOrganizerById(id),
+    getEventsByOrganizer(id),
+  ])
   if (!organizer) notFound()
 
-  const allEvents = mockEvents.filter((e) => e.organizer_id === organizer.id)
   const now = new Date().toISOString().split('T')[0]
   const activeEvents = allEvents.filter((e) => e.event_date >= now && (e.status === 'published' || e.status === 'needs_check'))
   const pastEvents = allEvents.filter((e) => e.event_date < now)

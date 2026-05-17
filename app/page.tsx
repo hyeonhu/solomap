@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { EventList } from '@/components/events/EventList'
-import { mockEvents } from '@/data/mock-events'
-import { isThisWeekend } from '@/lib/utils'
+import { getWeekendEvents, getRecentEvents } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 const quickFilters = [
   { label: '오늘', href: '/events?date=today' },
@@ -14,11 +15,12 @@ const quickFilters = [
   { label: '솔로파티', href: '/events?type=solo_party' },
 ]
 
-const publishedEvents = mockEvents.filter((e) => e.status === 'published' || e.status === 'needs_check')
-const weekendEvents = publishedEvents.filter((e) => isThisWeekend(e.event_date))
-const recentEvents = publishedEvents.slice(0, 4)
+export default async function HomePage() {
+  const [weekendEvents, recentEvents] = await Promise.all([
+    getWeekendEvents(),
+    getRecentEvents(4),
+  ])
 
-export default function HomePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-10">
 

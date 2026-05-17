@@ -2,7 +2,9 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { EventForm } from '@/components/admin/EventForm'
-import { mockEvents } from '@/data/mock-events'
+import { adminGetEventById } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -10,7 +12,7 @@ interface PageProps {
 
 export default async function AdminEventEditPage({ params }: PageProps) {
   const { id } = await params
-  const event = mockEvents.find((e) => e.id === id)
+  const event = await adminGetEventById(id)
   if (!event) notFound()
 
   return (

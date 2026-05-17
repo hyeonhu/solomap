@@ -1,10 +1,13 @@
 import Link from 'next/link'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { mockEvents } from '@/data/mock-events'
+import { adminGetAllEvents } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 import { EVENT_TYPES, EVENT_STATUS } from '@/lib/constants'
 import { formatDateShort } from '@/lib/utils'
 
-export default function AdminEventsPage() {
+export default async function AdminEventsPage() {
+  const events = await adminGetAllEvents()
   const today = new Date().toISOString().split('T')[0]
 
   return (
@@ -12,6 +15,10 @@ export default function AdminEventsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-gray-900">행사 관리</h1>
         <div className="flex gap-2">
+          <Link href="/admin/upload"
+            className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:border-rose-300">
+            CSV 업로드
+          </Link>
           <Link href="/admin/events/new"
             className="bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-600">
             + 새 행사 등록
@@ -29,7 +36,13 @@ export default function AdminEventsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {mockEvents.map((event) => {
+            {events.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-12 text-center text-gray-400 text-sm">
+                  등록된 행사가 없습니다. CSV 업로드로 일괄 등록하거나 새 행사를 등록하세요.
+                </td>
+              </tr>
+            ) : events.map((event) => {
               const isPastDue = event.event_date < today && event.status === 'published'
               const isStale = event.last_verified_at &&
                 new Date(event.last_verified_at) < new Date(Date.now() - 7 * 86400000)

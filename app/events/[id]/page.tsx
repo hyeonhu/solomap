@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { mockEvents } from '@/data/mock-events'
+import { getEventById } from '@/lib/queries'
 import { EventStatusBadge } from '@/components/events/EventStatusBadge'
 import { Badge } from '@/components/common/Badge'
 import { EVENT_TYPES, SOURCE_TYPES } from '@/lib/constants'
@@ -14,7 +14,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const event = mockEvents.find((e) => e.id === id)
+  const event = await getEventById(id)
   if (!event) return { title: '행사를 찾을 수 없습니다 - 솔로맵' }
 
   const typeLabel = EVENT_TYPES[event.event_type] ?? event.event_type
@@ -24,21 +24,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      locale: 'ko_KR',
-      type: 'article',
-    },
-    alternates: {
-      canonical: `/events/${event.id}`,
-    },
+    openGraph: { title, description, locale: 'ko_KR', type: 'article' },
+    alternates: { canonical: `/events/${event.id}` },
   }
 }
 
 export default async function EventDetailPage({ params }: PageProps) {
   const { id } = await params
-  const event = mockEvents.find((e) => e.id === id)
+  const event = await getEventById(id)
   if (!event) notFound()
 
   const isAdult = (event.age_min_male ?? 0) >= 19 || (event.age_min_female ?? 0) >= 19
