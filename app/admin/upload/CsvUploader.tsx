@@ -18,23 +18,6 @@ type UploadResult = {
   results: ResultRow[]
 }
 
-const ORGANIZER_TEMPLATE = `name,slug,description,website_url,instagram_url,kakao_url,main_region,official_status
-테스트업체,test-organizer,업체 설명,https://example.com,https://instagram.com/test,,서울,unclaimed`
-
-const EVENT_TEMPLATE = `title,slug,event_type,organizer_slug,source_url,source_type,event_date,start_time,end_time,city,district,venue_name,venue_visibility,price_male,price_female,price_common,age_min_male,age_max_male,age_min_female,age_max_female,capacity_male,capacity_female,status,summary,admin_note
-테스트 로테이팅 소개팅,test-event-20240101,rotation_dating,test-organizer,https://example.com/event,manual,2024-01-01,19:00,22:00,서울,강남구,,after_signup,55000,45000,,27,35,24,32,10,10,published,행사 요약 텍스트,`
-
-function downloadCSV(filename: string, content: string) {
-  const BOM = '﻿'
-  const blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
 export function CsvUploader() {
   const [tab, setTab] = useState<UploadType>('organizers')
   const [file, setFile] = useState<File | null>(null)
@@ -65,11 +48,8 @@ export function CsvUploader() {
     })
 
     const data = await res.json()
-    if (!res.ok) {
-      setError(data.error ?? '업로드 실패')
-    } else {
-      setResult(data)
-    }
+    if (!res.ok) setError(data.error ?? '업로드 실패')
+    else setResult(data)
     setLoading(false)
   }
 
@@ -79,6 +59,18 @@ export function CsvUploader() {
     setResult(null)
     setError('')
     if (inputRef.current) inputRef.current.value = ''
+  }
+
+  const handleTemplateDownload = async () => {
+    const res = await fetch(`/api/admin/templates/${tab}`)
+    if (!res.ok) return
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${tab}_template.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -104,41 +96,42 @@ export function CsvUploader() {
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-blue-900">
-            {tab === 'organizers' ? '업체 CSV 템플릿' : '행사 CSV 템플릿'}
+            {tab === 'organizers' ? '업체 Excel 템플릿' : '행사 Excel 템플릿'}
           </p>
           <p className="text-xs text-blue-600 mt-0.5">
-            템플릿을 다운로드해서 데이터를 채운 뒤 업로드하세요.
+            드롭다운이 포함된 템플릿을 다운로드해서 데이터를 채운 뒤 업로드하세요.
           </p>
         </div>
         <button
-          onClick={() =>
-            downloadCSV(
-              tab === 'organizers' ? 'organizers_template.csv' : 'events_template.csv',
-              tab === 'organizers' ? ORGANIZER_TEMPLATE : EVENT_TEMPLATE
-            )
-          }
-          className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+          onClick={handleTemplateDownload}
+          className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
         >
-          템플릿 다운로드
+          템플릿 다운로드 (.xlsx)
         </button>
       </div>
 
-      {/* 필드 설명 */}
+      {/* 필드 안내 */}
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-600 space-y-1">
+        <div className="flex gap-3 mb-2">
+          <span className="inline-flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm bg-rose-300 inline-block"></span>
+            <span>필수 항목</span>
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm bg-rose-100 inline-block"></span>
+            <span>선택 항목</span>
+          </span>
+        </div>
         {tab === 'organizers' ? (
           <>
-            <p><span className="font-semibold text-gray-800">필수:</span> name, slug</p>
             <p><span className="font-semibold text-gray-800">slug:</span> 영문 소문자·숫자·하이픈만 (예: my-organizer)</p>
-            <p><span className="font-semibold text-gray-800">official_status:</span> unclaimed (기본값) / hidden</p>
+            <p><span className="font-semibold text-gray-800">official_status:</span> 드롭다운에서 선택 — unclaimed(기본값) / hidden</p>
           </>
         ) : (
           <>
-            <p><span className="font-semibold text-gray-800">필수:</span> title, slug, event_type, organizer_slug, source_url, event_date, city</p>
-            <p><span className="font-semibold text-gray-800">event_type:</span> rotation_dating / solo_party / wine_party / coffee_meeting / office_worker_dating / age_limited_party</p>
-            <p><span className="font-semibold text-gray-800">organizer_slug:</span> 먼저 업체를 업로드한 뒤 해당 slug 입력</p>
-            <p><span className="font-semibold text-gray-800">event_date:</span> YYYY-MM-DD 형식</p>
-            <p><span className="font-semibold text-gray-800">status:</span> draft (기본값) / published / closed / cancelled / hidden / needs_check</p>
-            <p><span className="font-semibold text-gray-800">venue_visibility:</span> after_signup (기본값) / public</p>
+            <p><span className="font-semibold text-gray-800">organizer_slug:</span> 업체를 먼저 업로드한 뒤 해당 slug 입력</p>
+            <p><span className="font-semibold text-gray-800">event_date:</span> YYYY-MM-DD 형식 (예: 2024-06-01)</p>
+            <p><span className="font-semibold text-gray-800">event_type / status / venue_visibility / source_type:</span> 드롭다운에서 선택</p>
           </>
         )}
       </div>
@@ -151,7 +144,7 @@ export function CsvUploader() {
         <input
           ref={inputRef}
           type="file"
-          accept=".csv"
+          accept=".xlsx"
           onChange={handleFileChange}
           className="hidden"
         />
@@ -162,8 +155,8 @@ export function CsvUploader() {
           </div>
         ) : (
           <div>
-            <p className="text-gray-500">CSV 파일을 클릭해서 선택하세요</p>
-            <p className="text-xs text-gray-400 mt-1">.csv 파일만 가능</p>
+            <p className="text-gray-500">Excel 파일을 클릭해서 선택하세요</p>
+            <p className="text-xs text-gray-400 mt-1">.xlsx 파일만 가능</p>
           </div>
         )}
       </div>
@@ -172,13 +165,12 @@ export function CsvUploader() {
         <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
       )}
 
-      {/* 업로드 버튼 */}
       <button
         onClick={handleUpload}
         disabled={!file || loading}
         className="w-full bg-rose-500 text-white rounded-lg py-2.5 font-medium hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        {loading ? '업로드 중...' : `${tab === 'organizers' ? '업체' : '행사'} CSV 업로드`}
+        {loading ? '업로드 중...' : `${tab === 'organizers' ? '업체' : '행사'} 업로드`}
       </button>
 
       {/* 결과 */}

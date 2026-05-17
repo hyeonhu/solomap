@@ -1,41 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/adminAuth'
 import { getAdminClient } from '@/lib/db'
+import { parseXLSX } from '@/lib/excelTemplate'
 
 const VALID_EVENT_TYPES = ['rotation_dating', 'solo_party', 'wine_party', 'coffee_meeting', 'office_worker_dating', 'age_limited_party']
 const VALID_STATUSES = ['draft', 'published', 'closed', 'cancelled', 'hidden', 'needs_check']
 const VALID_SOURCE_TYPES = ['public_page', 'user_submission', 'organizer_submission', 'partner_feed', 'manual']
 const VALID_VENUE_VISIBILITY = ['public', 'after_signup']
-
-function parseCSVLine(line: string): string[] {
-  const result: string[] = []
-  let current = ''
-  let inQuotes = false
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i]
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++ }
-      else inQuotes = !inQuotes
-    } else if (char === ',' && !inQuotes) {
-      result.push(current); current = ''
-    } else {
-      current += char
-    }
-  }
-  result.push(current)
-  return result
-}
-
-function parseCSV(text: string): Record<string, string>[] {
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n')
-  if (lines.length < 2) return []
-  const headers = parseCSVLine(lines[0]).map(h => h.trim())
-  return lines.slice(1).filter(l => l.trim()).map(line => {
-    const values = parseCSVLine(line)
-    return Object.fromEntries(headers.map((h, i) => [h, (values[i] ?? '').trim()]))
-  })
-}
 
 function toInt(val: string): number | null {
   const n = parseInt(val)
@@ -50,14 +21,12 @@ export async function POST(req: NextRequest) {
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: '파일이 없습니다.' }, { status: 400 })
 
-  const text = await file.text()
-  const rows = parseCSV(text)
+  const buffer = await file.arrayBuffer()
+  const rows = await parseXLSX(buffer)
   if (rows.length === 0) return NextResponse.json({ error: '데이터가 없습니다.' }, { status: 400 })
 
   const supabase = getAdminClient()
   const results: { row: number; status: 'success' | 'error'; title: string; message?: string }[] = []
-
-  // organizer_slug → id 캐시 (중복 조회 방지)
   const slugCache: Record<string, string> = {}
 
   for (let i = 0; i < rows.length; i++) {
@@ -65,7 +34,6 @@ export async function POST(req: NextRequest) {
     const rowNum = i + 2
     const title = row.title || `(${rowNum}행)`
 
-    // 필수 필드 검증
     if (!row.title?.trim()) {
       results.push({ row: rowNum, status: 'error', title, message: 'title은 필수입니다.' }); continue
     }
@@ -88,7 +56,6 @@ export async function POST(req: NextRequest) {
       results.push({ row: rowNum, status: 'error', title, message: 'city는 필수입니다.' }); continue
     }
 
-    // organizer_slug → id 조회
     let organizerId = slugCache[row.organizer_slug]
     if (!organizerId) {
       const { data } = await supabase

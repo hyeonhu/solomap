@@ -1,37 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/adminAuth'
 import { getAdminClient } from '@/lib/db'
-
-// RFC 4180 준수 CSV 파서
-function parseCSVLine(line: string): string[] {
-  const result: string[] = []
-  let current = ''
-  let inQuotes = false
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i]
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++ }
-      else inQuotes = !inQuotes
-    } else if (char === ',' && !inQuotes) {
-      result.push(current); current = ''
-    } else {
-      current += char
-    }
-  }
-  result.push(current)
-  return result
-}
-
-function parseCSV(text: string): Record<string, string>[] {
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n')
-  if (lines.length < 2) return []
-  const headers = parseCSVLine(lines[0]).map(h => h.trim())
-  return lines.slice(1).filter(l => l.trim()).map(line => {
-    const values = parseCSVLine(line)
-    return Object.fromEntries(headers.map((h, i) => [h, (values[i] ?? '').trim()]))
-  })
-}
+import { parseXLSX } from '@/lib/excelTemplate'
 
 export async function POST(req: NextRequest) {
   const auth = await requireAdmin()
@@ -41,8 +11,8 @@ export async function POST(req: NextRequest) {
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: '파일이 없습니다.' }, { status: 400 })
 
-  const text = await file.text()
-  const rows = parseCSV(text)
+  const buffer = await file.arrayBuffer()
+  const rows = await parseXLSX(buffer)
   if (rows.length === 0) return NextResponse.json({ error: '데이터가 없습니다.' }, { status: 400 })
 
   const supabase = getAdminClient()
@@ -54,16 +24,13 @@ export async function POST(req: NextRequest) {
     const name = row.name || `(${rowNum}행)`
 
     if (!row.name?.trim()) {
-      results.push({ row: rowNum, status: 'error', name, message: 'name은 필수입니다.' })
-      continue
+      results.push({ row: rowNum, status: 'error', name, message: 'name은 필수입니다.' }); continue
     }
     if (!row.slug?.trim()) {
-      results.push({ row: rowNum, status: 'error', name, message: 'slug는 필수입니다.' })
-      continue
+      results.push({ row: rowNum, status: 'error', name, message: 'slug는 필수입니다.' }); continue
     }
     if (!/^[a-z0-9-]+$/.test(row.slug)) {
-      results.push({ row: rowNum, status: 'error', name, message: 'slug는 영문 소문자, 숫자, 하이픈만 가능합니다.' })
-      continue
+      results.push({ row: rowNum, status: 'error', name, message: 'slug는 영문 소문자, 숫자, 하이픈만 가능합니다.' }); continue
     }
 
     const { error } = await supabase.from('organizers').insert({
