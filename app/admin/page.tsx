@@ -33,7 +33,7 @@ export default async function AdminDashboardPage() {
         </Link>
         <Link href="/admin/upload"
           className="bg-white border border-gray-200 rounded-xl p-5 hover:border-rose-300 transition-colors">
-          <p className="font-semibold text-lg text-gray-900 mb-1">CSV 업로드</p>
+          <p className="font-semibold text-lg text-gray-900 mb-1">Excel 업로드</p>
           <p className="text-gray-500 text-sm">업체·행사 데이터를 일괄 등록합니다.</p>
         </Link>
         <Link href="/admin/submissions"

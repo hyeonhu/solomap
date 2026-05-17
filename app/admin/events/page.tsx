@@ -18,7 +18,7 @@ export default async function AdminEventsPage() {
         <div className="flex gap-2">
           <Link href="/admin/upload"
             className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:border-rose-300">
-            CSV 업로드
+            Excel 업로드
           </Link>
           <Link href="/admin/events/new"
             className="bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-600">
@@ -40,7 +40,7 @@ export default async function AdminEventsPage() {
             {events.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-12 text-center text-gray-400 text-sm">
-                  등록된 행사가 없습니다. CSV 업로드로 일괄 등록하거나 새 행사를 등록하세요.
+                  등록된 행사가 없습니다. Excel 업로드로 일괄 등록하거나 새 행사를 등록하세요.
                 </td>
               </tr>
             ) : events.map((event) => {
