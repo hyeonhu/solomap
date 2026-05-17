@@ -77,19 +77,6 @@ export async function generateOrganizersTemplate(): Promise<Buffer> {
   })
   styleHeaderRow(ws, columns.length)
 
-  // 샘플 행
-  ws.addRow({
-    name: '테스트업체',
-    slug: 'test-organizer',
-    description: '업체 설명 (선택)',
-    website_url: 'https://example.com',
-    instagram_url: 'https://instagram.com/example',
-    kakao_url: '',
-    main_region: '서울',
-    official_status: 'unclaimed',
-  })
-  styleSampleRow(ws, columns.length)
-
   // 드롭다운: official_status (H열)
   addDropdown(ws, 'H3:H1000', ['unclaimed', 'hidden'],
     'unclaimed 또는 hidden만 입력 가능합니다.')
@@ -152,36 +139,6 @@ export async function generateEventsTemplate(): Promise<Buffer> {
     }
   })
   styleHeaderRow(ws, columns.length)
-
-  // 샘플 행
-  ws.addRow({
-    title: '강남 로테이팅 소개팅',
-    slug: 'rotation-dating-gangnam-20240601',
-    event_type: 'rotation_dating',
-    organizer_slug: 'test-organizer',
-    source_url: 'https://example.com/event',
-    source_type: 'manual',
-    event_date: '2024-06-01',
-    start_time: '19:00',
-    end_time: '22:00',
-    city: '서울',
-    district: '강남구',
-    venue_name: '',
-    venue_visibility: 'after_signup',
-    price_male: 55000,
-    price_female: 45000,
-    price_common: '',
-    age_min_male: 27,
-    age_max_male: 35,
-    age_min_female: 24,
-    age_max_female: 32,
-    capacity_male: 10,
-    capacity_female: 10,
-    status: 'published',
-    summary: '행사 요약 텍스트 (선택)',
-    admin_note: '',
-  })
-  styleSampleRow(ws, columns.length)
 
   // 드롭다운
   addDropdown(ws, 'C3:C1000',
