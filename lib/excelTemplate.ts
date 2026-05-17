@@ -78,7 +78,7 @@ export async function generateOrganizersTemplate(): Promise<Buffer> {
   styleHeaderRow(ws, columns.length)
 
   // 드롭다운: official_status (H열)
-  addDropdown(ws, 'H3:H1000', ['unclaimed', 'hidden'],
+  addDropdown(ws, 'H2:H1000', ['unclaimed', 'hidden'],
     'unclaimed 또는 hidden만 입력 가능합니다.')
 
   // 참고 시트
@@ -141,19 +141,19 @@ export async function generateEventsTemplate(): Promise<Buffer> {
   styleHeaderRow(ws, columns.length)
 
   // 드롭다운
-  addDropdown(ws, 'C3:C1000',
+  addDropdown(ws, 'C2:C1000',
     ['rotation_dating', 'solo_party', 'wine_party', 'coffee_meeting', 'office_worker_dating', 'age_limited_party'],
     '유효한 event_type 값을 선택하세요.')
 
-  addDropdown(ws, 'F3:F1000',
+  addDropdown(ws, 'F2:F1000',
     ['manual', 'public_page', 'user_submission', 'organizer_submission', 'partner_feed'],
     '유효한 source_type 값을 선택하세요.')
 
-  addDropdown(ws, 'M3:M1000',
+  addDropdown(ws, 'M2:M1000',
     ['after_signup', 'public'],
     'after_signup 또는 public만 입력 가능합니다.')
 
-  addDropdown(ws, 'W3:W1000',
+  addDropdown(ws, 'W2:W1000',
     ['draft', 'published', 'needs_check', 'closed', 'cancelled', 'hidden'],
     '유효한 status 값을 선택하세요.')
 
