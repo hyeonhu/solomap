@@ -5,6 +5,7 @@ import { adminGetAllEvents } from '@/lib/queries'
 export const dynamic = 'force-dynamic'
 import { EVENT_TYPES, EVENT_STATUS } from '@/lib/constants'
 import { formatDateShort } from '@/lib/utils'
+import { EventStatusToggle } from '@/components/admin/EventStatusToggle'
 
 export default async function AdminEventsPage() {
   const events = await adminGetAllEvents()
@@ -30,7 +31,7 @@ export default async function AdminEventsPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
-              {['행사명', '업체', '날짜', '지역', '유형', '상태', '마지막 확인', ''].map((h) => (
+              {['행사명', '업체', '날짜', '지역', '유형', '상태', '마감', '마지막 확인', ''].map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -65,6 +66,9 @@ export default async function AdminEventsPage() {
                     }`}>
                       {EVENT_STATUS[event.status]}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <EventStatusToggle eventId={event.id} currentStatus={event.status} />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {event.last_verified_at ? (
