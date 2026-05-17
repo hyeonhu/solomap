@@ -22,6 +22,7 @@ export function CsvUploader() {
   const [tab, setTab] = useState<UploadType>('organizers')
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
+  const [templateLoading, setTemplateLoading] = useState(false)
   const [result, setResult] = useState<UploadResult | null>(null)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -62,15 +63,31 @@ export function CsvUploader() {
   }
 
   const handleTemplateDownload = async () => {
-    const res = await fetch(`/api/admin/templates/${tab}`)
-    if (!res.ok) return
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${tab}_template.xlsx`
-    a.click()
-    URL.revokeObjectURL(url)
+    setTemplateLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/admin/templates/${tab}`, {
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(`템플릿 다운로드 실패: ${data.error ?? res.status}`)
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${tab}_template.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      setError(`템플릿 다운로드 중 오류가 발생했습니다.`)
+    } finally {
+      setTemplateLoading(false)
+    }
   }
 
   return (
@@ -104,9 +121,10 @@ export function CsvUploader() {
         </div>
         <button
           onClick={handleTemplateDownload}
-          className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+          disabled={templateLoading}
+          className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
         >
-          템플릿 다운로드 (.xlsx)
+          {templateLoading ? '생성 중...' : '템플릿 다운로드 (.xlsx)'}
         </button>
       </div>
 
