@@ -4,6 +4,7 @@ const navItems = [
   { href: '/admin', label: '대시보드' },
   { href: '/admin/events', label: '행사 관리' },
   { href: '/admin/submissions', label: '제보 관리' },
+  { href: '/admin/upload', label: 'CSV 업로드' },
 ]
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
