@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { DATE_FILTERS, EVENT_TYPES, REGIONS, SORT_OPTIONS, PRICE_FILTERS, AGE_FILTERS } from '@/lib/constants'
+import { trackSearch } from '@/lib/analytics'
 
 export function EventFilters() {
   const router = useRouter()
@@ -34,6 +35,7 @@ export function EventFilters() {
     if (!isMounted.current) { isMounted.current = true; return }
     const timer = setTimeout(() => {
       set('search', searchInput)
+      if (searchInput.trim()) trackSearch(searchInput)
     }, 400)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps

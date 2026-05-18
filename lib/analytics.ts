@@ -30,6 +30,24 @@ export async function trackOutboundClick(payload: OutboundClickPayload): Promise
       props: { url: payload.sourceUrl },
     })
   }
+
+  // GA4 이벤트
+  if (typeof window !== 'undefined' && (window as any).gtag) {
+    ;(window as any).gtag('event', 'outbound_click', {
+      event_category: 'engagement',
+      event_label: payload.sourceUrl,
+      event_id: payload.eventId,
+    })
+  }
+}
+
+/** GA4 검색어 추적 */
+export function trackSearch(searchTerm: string): void {
+  if (typeof window === 'undefined' || !(window as any).gtag) return
+  if (!searchTerm.trim()) return
+  ;(window as any).gtag('event', 'search', {
+    search_term: searchTerm.trim(),
+  })
 }
 
 export function getOrCreateSessionId(): string {
