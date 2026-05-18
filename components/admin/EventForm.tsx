@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/common/Button'
 import { EVENT_TYPES, REGIONS } from '@/lib/constants'
@@ -15,6 +15,37 @@ export function EventForm({ initialData, mode }: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // 원문 링크 중복 체크
+  const [sourceUrl, setSourceUrl] = useState(initialData?.source_url ?? '')
+  const [urlStatus, setUrlStatus] = useState<'idle' | 'checking' | 'ok' | 'duplicate'>('idle')
+  const [dupTitle, setDupTitle] = useState('')
+  const isMounted = useRef(false)
+
+  useEffect(() => {
+    if (!isMounted.current) { isMounted.current = true; return }
+    if (!sourceUrl) { setUrlStatus('idle'); return }
+
+    setUrlStatus('checking')
+    const timer = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ check_url: sourceUrl })
+        if (mode === 'edit' && initialData?.id) params.set('exclude_id', initialData.id)
+        const res = await fetch(`/api/admin/events?${params}`, { credentials: 'include' })
+        const d = await res.json()
+        if (d.duplicate) {
+          setUrlStatus('duplicate')
+          setDupTitle(d.event?.title ?? '')
+        } else {
+          setUrlStatus('ok')
+        }
+      } catch {
+        setUrlStatus('idle')
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceUrl])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -64,7 +95,39 @@ export function EventForm({ initialData, mode }: EventFormProps) {
         <h2 className="font-semibold text-gray-800 mb-3">기본 정보</h2>
         <div className="space-y-3">
           {field('title', '행사명', 'text', true)}
-          {field('source_url', '원문 링크', 'url', true, 'https://')}
+
+          {/* 원문 링크 — 중복 체크 포함 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              원문 링크 <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="url"
+              name="source_url"
+              required
+              placeholder="https://"
+              value={sourceUrl}
+              onChange={(e) => setSourceUrl(e.target.value)}
+              className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors ${
+                urlStatus === 'duplicate'
+                  ? 'border-red-400 focus:border-red-400'
+                  : urlStatus === 'ok'
+                  ? 'border-green-400 focus:border-green-400'
+                  : 'border-gray-200 focus:border-rose-400'
+              }`}
+            />
+            {urlStatus === 'checking' && (
+              <p className="text-xs text-gray-400 mt-1">확인 중...</p>
+            )}
+            {urlStatus === 'duplicate' && (
+              <p className="text-xs text-red-500 mt-1">
+                ⚠ 이미 등록된 링크입니다{dupTitle ? ` — "${dupTitle}"` : ''}.
+              </p>
+            )}
+            {urlStatus === 'ok' && (
+              <p className="text-xs text-green-600 mt-1">✓ 사용 가능한 링크입니다.</p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>

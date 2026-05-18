@@ -4,13 +4,26 @@ import { getAdminClient } from '@/lib/db'
 import { generateSlug } from '@/lib/utils'
 
 // GET /api/admin/events — 전체 행사 목록
+// GET /api/admin/events?check_url=<url>&exclude_id=<id> — URL 중복 체크
 export async function GET(req: NextRequest) {
   const auth = await requireAdmin()
   if (auth instanceof NextResponse) return auth
 
   const { searchParams } = new URL(req.url)
-  const status = searchParams.get('status')
 
+  // URL 중복 체크 모드
+  const checkUrl = searchParams.get('check_url')
+  if (checkUrl) {
+    const excludeId = searchParams.get('exclude_id')
+    const db = getAdminClient()
+    let q = db.from('events').select('id, title').eq('source_url', checkUrl).limit(1)
+    if (excludeId) q = q.neq('id', excludeId)
+    const { data } = await q
+    const dup = (data ?? []).length > 0
+    return NextResponse.json({ duplicate: dup, event: data?.[0] ?? null })
+  }
+
+  const status = searchParams.get('status')
   const db = getAdminClient()
   let query = db
     .from('events')

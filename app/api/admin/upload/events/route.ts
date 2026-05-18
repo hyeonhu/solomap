@@ -56,6 +56,16 @@ export async function POST(req: NextRequest) {
       results.push({ row: rowNum, status: 'error', title, message: 'city는 필수입니다.' }); continue
     }
 
+    // source_url 중복 체크
+    const { data: dupCheck } = await supabase
+      .from('events')
+      .select('id')
+      .eq('source_url', row.source_url)
+      .limit(1)
+    if (dupCheck && dupCheck.length > 0) {
+      results.push({ row: rowNum, status: 'error', title, message: '원문 링크 중복 — 스킵됨' }); continue
+    }
+
     let organizerId = slugCache[row.organizer_slug]
     if (!organizerId) {
       const { data } = await supabase
