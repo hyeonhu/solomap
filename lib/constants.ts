@@ -57,9 +57,31 @@ export const DATE_FILTERS = [
 
 export const SORT_OPTIONS = [
   { value: 'date_asc', label: '날짜 빠른 순' },
+  { value: 'closing_soon', label: '마감 임박 순' },
   { value: 'created_desc', label: '최근 등록 순' },
   { value: 'price_asc', label: '가격 낮은 순' },
   { value: 'updated_desc', label: '업데이트 최신 순' },
+] as const
+
+export const PRICE_FILTERS = [
+  { value: 'free', label: '무료' },
+  { value: '30000', label: '3만원 이하' },
+  { value: '50000', label: '5만원 이하' },
+  { value: '70000', label: '7만원 이하' },
+] as const
+
+export const AGE_FILTERS = [
+  { value: '20s', label: '20대' },
+  { value: '30s', label: '30대' },
+  { value: '20s30s', label: '20-30대' },
+] as const
+
+export const REGION_SECTIONS = [
+  { key: 'gangnam', label: '강남/서초' },
+  { key: 'hongdae', label: '홍대/합정' },
+  { key: 'seongsu', label: '성수/건대' },
+  { key: 'sinchon', label: '신촌/이대' },
+  { key: 'busan', label: '부산' },
 ] as const
 
 export const SOURCE_TYPES = {

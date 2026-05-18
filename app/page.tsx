@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { EventList } from '@/components/events/EventList'
-import { getWeekendEvents, getRecentEvents } from '@/lib/queries'
+import { getWeekendEvents, getRecentEvents, getEventsByRegion } from '@/lib/queries'
+import { REGION_SECTIONS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,10 +17,15 @@ const quickFilters = [
 ]
 
 export default async function HomePage() {
-  const [weekendEvents, recentEvents] = await Promise.all([
+  const [weekendEvents, recentEvents, ...regionalResults] = await Promise.all([
     getWeekendEvents(),
     getRecentEvents(4),
+    ...REGION_SECTIONS.map((r) => getEventsByRegion(r.key, 3)),
   ])
+
+  const regionalSections = REGION_SECTIONS
+    .map((r, i) => ({ ...r, events: regionalResults[i] }))
+    .filter((s) => s.events.length > 0)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-10">
@@ -70,6 +76,29 @@ export default async function HomePage() {
           emptyDescription="다른 날짜 필터를 선택해 보세요."
         />
       </section>
+
+      {/* 지역별 행사 */}
+      {regionalSections.length > 0 && (
+        <section>
+          <h2 className="text-base font-bold text-gray-900 mb-6">지역별 행사</h2>
+          <div className="space-y-8">
+            {regionalSections.map((section) => (
+              <div key={section.key}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-700">{section.label}</h3>
+                  <Link
+                    href={`/events?region=${section.key}`}
+                    className="text-xs text-rose-500 hover:underline"
+                  >
+                    더 보기
+                  </Link>
+                </div>
+                <EventList events={section.events} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 최근 등록 행사 */}
       <section>

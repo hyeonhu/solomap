@@ -35,6 +35,23 @@ function weekendRange(): { start: string; end: string } {
 // 공개 쿼리
 // ──────────────────────────────────────────
 
+const REGION_MAP: Record<string, string[]> = {
+  gangnam: ['강남', '서초'],
+  hongdae: ['홍대', '합정'],
+  seongsu: ['성수', '건대'],
+  sinchon: ['신촌', '이대'],
+  jongno: ['종로', '을지로'],
+  jamsil: ['잠실', '송파'],
+  yeouido: ['여의도', '영등포'],
+  seoul: ['서울'],
+  gyeonggi: ['경기'],
+  incheon: ['인천'],
+  busan: ['부산'],
+  daegu: ['대구'],
+  daejeon: ['대전'],
+  gwangju: ['광주'],
+}
+
 /** 행사 목록 (필터 포함) */
 export async function getPublishedEvents(
   params: Record<string, string | undefined>
@@ -45,8 +62,23 @@ export async function getPublishedEvents(
     .select('*, organizer:organizers(*)')
     .in('status', ['published', 'needs_check'])
 
-  // 날짜 필터
-  if (params.date === 'today') {
+  // 검색 (업체명 + 행사명)
+  if (params.search) {
+    const term = params.search.trim()
+    const { data: orgs } = await supabase
+      .from('organizers')
+      .select('id')
+      .ilike('name', `%${term}%`)
+    const orgIds = (orgs ?? []).map((o: { id: string }) => o.id)
+    const conditions = [`title.ilike.%${term}%`]
+    orgIds.forEach((id: string) => conditions.push(`organizer_id.eq.${id}`))
+    query = query.or(conditions.join(','))
+  }
+
+  // 날짜 직접 선택
+  if (params.date_custom) {
+    query = query.eq('event_date', params.date_custom)
+  } else if (params.date === 'today') {
     query = query.eq('event_date', todayStr())
   } else if (params.date === 'tomorrow') {
     query = query.eq('event_date', tomorrowStr())
@@ -77,37 +109,74 @@ export async function getPublishedEvents(
 
   // 지역 필터
   if (params.region) {
-    const regionMap: Record<string, string[]> = {
-      gangnam: ['강남', '서초'],
-      hongdae: ['홍대', '합정'],
-      seongsu: ['성수', '건대'],
-      sinchon: ['신촌', '이대'],
-      jongno: ['종로', '을지로'],
-      jamsil: ['잠실', '송파'],
-      yeouido: ['여의도', '영등포'],
-      seoul: ['서울'],
-      gyeonggi: ['경기'],
-      incheon: ['인천'],
-      busan: ['부산'],
-      daegu: ['대구'],
-      daejeon: ['대전'],
-      gwangju: ['광주'],
-    }
-    const keywords = regionMap[params.region] ?? [params.region]
+    const keywords = REGION_MAP[params.region] ?? [params.region]
     const orCond = keywords.flatMap(kw => [`district.ilike.%${kw}%`, `city.ilike.%${kw}%`]).join(',')
     query = query.or(orCond)
   }
 
+  // 가격 필터
+  if (params.price) {
+    if (params.price === 'free') {
+      query = query.or('price_female.eq.0,price_common.eq.0')
+    } else {
+      const maxPrice = parseInt(params.price)
+      if (!isNaN(maxPrice)) {
+        query = query.or(`price_female.lte.${maxPrice},price_common.lte.${maxPrice}`)
+      }
+    }
+  }
+
+  // 연령대 필터 (여성 연령 기준, null인 경우 포함)
+  if (params.age) {
+    const ageRanges: Record<string, [number, number]> = {
+      '20s': [20, 29],
+      '30s': [30, 39],
+      '20s30s': [20, 39],
+    }
+    const range = ageRanges[params.age]
+    if (range) {
+      const [min, max] = range
+      query = query.or(
+        `age_min_female.is.null,and(age_max_female.gte.${min},age_min_female.lte.${max})`
+      )
+    }
+  }
+
   // 정렬
   const sort = params.sort ?? 'date_asc'
-  if (sort === 'date_asc') query = query.order('event_date', { ascending: true })
-  else if (sort === 'created_desc') query = query.order('created_at', { ascending: false })
-  else if (sort === 'price_asc') query = query.order('price_female', { ascending: true, nullsFirst: false })
-  else if (sort === 'updated_desc') query = query.order('updated_at', { ascending: false })
-  else query = query.order('event_date', { ascending: true })
+  if (sort === 'closing_soon') {
+    query = query.gte('event_date', todayStr()).order('event_date', { ascending: true })
+  } else if (sort === 'date_asc') {
+    query = query.order('event_date', { ascending: true })
+  } else if (sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else if (sort === 'price_asc') {
+    query = query.order('price_female', { ascending: true, nullsFirst: false })
+  } else if (sort === 'updated_desc') {
+    query = query.order('updated_at', { ascending: false })
+  } else {
+    query = query.order('event_date', { ascending: true })
+  }
 
   const { data, error } = await query
   if (error) { console.error('getPublishedEvents:', error.message); return [] }
+  return (data ?? []) as EventWithOrganizer[]
+}
+
+/** 지역별 행사 (메인 페이지용) */
+export async function getEventsByRegion(regionKey: string, limit = 3): Promise<EventWithOrganizer[]> {
+  const supabase = getSupabase()
+  const keywords = REGION_MAP[regionKey] ?? [regionKey]
+  const orCond = keywords.flatMap(kw => [`district.ilike.%${kw}%`, `city.ilike.%${kw}%`]).join(',')
+
+  const { data } = await supabase
+    .from('events')
+    .select('*, organizer:organizers(*)')
+    .in('status', ['published', 'needs_check'])
+    .gte('event_date', todayStr())
+    .or(orCond)
+    .order('event_date', { ascending: true })
+    .limit(limit)
   return (data ?? []) as EventWithOrganizer[]
 }
 
