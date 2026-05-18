@@ -69,6 +69,7 @@
 | Phase 12 | 행사 필터 확장 (검색·가격·연령대·날짜직접선택·마감임박순), 메인 지역별 섹션 | [751578c](https://github.com/hyeonhu/solomap/commit/751578c) |
 | Phase 13 | 라이트모드 강제 고정 (다크모드 비활성화) | [9415d0f](https://github.com/hyeonhu/solomap/commit/9415d0f) |
 | Phase 14 | 원문 링크 중복 체크 (폼 실시간 확인 + PUT API) | [b96176b](https://github.com/hyeonhu/solomap/commit/b96176b) |
+| Phase 15 | Google Analytics 4 설치 + 이벤트 추적 (원문 클릭, 검색어) | [8a01660](https://github.com/hyeonhu/solomap/commit/8a01660) [1240e19](https://github.com/hyeonhu/solomap/commit/1240e19) |
 
 ---
 
