@@ -52,20 +52,23 @@
 
 ## 개발 히스토리
 
-| Phase | 내용 |
-|-------|------|
-| Phase 0 | Next.js 프로젝트 초기화, 폴더 구조 설계 |
-| Phase 1 | Mock 데이터 6개 행사/3개 업체, TypeScript 타입, 전체 14개 페이지 UI |
-| Phase 2 | `supabase/schema.sql` — 6개 테이블 + RLS + updated_at 트리거 |
-| Phase 3 | 관리자 로그인, 행사 CRUD 폼, 제보 관리 테이블 |
-| Phase 4 | Cloudflare Turnstile CAPTCHA, IP 해시 Rate Limit, Admin Auth API |
-| Phase 5 | `/api/track/click` outbound_clicks 로그, Plausible Script |
-| Phase 6 | generateMetadata, sitemap.xml, robots.txt |
-| Phase 7 | GitHub 연동, Vercel 배포, Supabase 실연결, 도메인(solomap.kr) 연결 |
-| Phase 8 | Mock → Supabase 실데이터 교체 (`lib/queries.ts`) |
-| Phase 9 | 관리자 페이지 미들웨어 인증 보호 |
-| Phase 10 | Excel(.xlsx) 업로드 기능 — 드롭다운 템플릿 + 일괄 INSERT |
-| Phase 11 | 행사 목록 마감 토글 버튼 (즉시 published ↔ closed 전환) |
+| Phase | 내용 | 커밋 |
+|-------|------|------|
+| Phase 0 | Next.js 프로젝트 초기화, 폴더 구조 설계 | [446c66b](https://github.com/hyeonhu/solomap/commit/446c66b) |
+| Phase 1 | Mock 데이터 6개 행사/3개 업체, TypeScript 타입, 전체 14개 페이지 UI | [1d618ef](https://github.com/hyeonhu/solomap/commit/1d618ef) |
+| Phase 2 | `supabase/schema.sql` — 6개 테이블 + RLS + updated_at 트리거 | [1d618ef](https://github.com/hyeonhu/solomap/commit/1d618ef) |
+| Phase 3 | 관리자 로그인, 행사 CRUD 폼, 제보 관리 테이블 | [1d618ef](https://github.com/hyeonhu/solomap/commit/1d618ef) |
+| Phase 4 | Cloudflare Turnstile CAPTCHA, IP 해시 Rate Limit, Admin Auth API | [1d618ef](https://github.com/hyeonhu/solomap/commit/1d618ef) |
+| Phase 5 | `/api/track/click` outbound_clicks 로그, Plausible Script | [1d618ef](https://github.com/hyeonhu/solomap/commit/1d618ef) |
+| Phase 6 | generateMetadata, sitemap.xml, robots.txt | [1d618ef](https://github.com/hyeonhu/solomap/commit/1d618ef) |
+| Phase 7 | GitHub 연동, Vercel 배포, Supabase 실연결, 도메인(solomap.kr) 연결 | (인프라) |
+| Phase 8 | Mock → Supabase 실데이터 교체 (`lib/queries.ts`) | [fb46ba9](https://github.com/hyeonhu/solomap/commit/fb46ba9) |
+| Phase 9 | 관리자 페이지 미들웨어 인증 보호 | [2f8cc56](https://github.com/hyeonhu/solomap/commit/2f8cc56) |
+| Phase 10 | Excel(.xlsx) 업로드 기능 — 드롭다운 템플릿 + 일괄 INSERT | [1d46879](https://github.com/hyeonhu/solomap/commit/1d46879) |
+| Phase 11 | 행사 목록 마감 토글 버튼 (즉시 published ↔ closed 전환) | [83a8628](https://github.com/hyeonhu/solomap/commit/83a8628) |
+| Phase 12 | 행사 필터 확장 (검색·가격·연령대·날짜직접선택·마감임박순), 메인 지역별 섹션 | [751578c](https://github.com/hyeonhu/solomap/commit/751578c) |
+| Phase 13 | 라이트모드 강제 고정 (다크모드 비활성화) | [9415d0f](https://github.com/hyeonhu/solomap/commit/9415d0f) |
+| Phase 14 | 원문 링크 중복 체크 (폼 실시간 확인 + PUT API) | [b96176b](https://github.com/hyeonhu/solomap/commit/b96176b) |
 
 ---
 
